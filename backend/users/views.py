@@ -19,6 +19,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             email=validated_data.get("email", ""),
             password=validated_data["password"]
         )
+        UserProfile.objects.get_or_create(user=user)
         return user
 
 
@@ -33,8 +34,8 @@ class ProfileSerializer(serializers.ModelSerializer):
     phone = serializers.CharField(source="profile.phone", allow_blank=True, allow_null=True, required=False)
     location = serializers.CharField(source="profile.location", allow_blank=True, allow_null=True, required=False)
     university = serializers.CharField(source="profile.university", allow_blank=True, allow_null=True, required=False)
-    linkedin = serializers.URLField(source="profile.linkedin", allow_blank=True, allow_null=True, required=False)
-    github = serializers.URLField(source="profile.github", allow_blank=True, allow_null=True, required=False)
+    linkedin = serializers.CharField(source="profile.linkedin", allow_blank=True, allow_null=True, required=False)
+    github = serializers.CharField(source="profile.github", allow_blank=True, allow_null=True, required=False)
     profile_image = serializers.ImageField(source="profile.profile_image", required=False, allow_null=True)
     cv = serializers.FileField(source="profile.cv", required=False, allow_null=True)
 
@@ -64,28 +65,26 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     def get_profile_image_url(self, obj):
         request = self.context.get("request")
-        if hasattr(obj, "profile") and obj.profile.profile_image:
-            if request:
-                return request.build_absolute_uri(obj.profile.profile_image.url)
-            return obj.profile.profile_image.url
+        profile, _ = UserProfile.objects.get_or_create(user=obj)
+        if profile.profile_image:
+            return request.build_absolute_uri(profile.profile_image.url) if request else profile.profile_image.url
         return None
 
     def get_cv_url(self, obj):
         request = self.context.get("request")
-        if hasattr(obj, "profile") and obj.profile.cv:
-            if request:
-                return request.build_absolute_uri(obj.profile.cv.url)
-            return obj.profile.cv.url
+        profile, _ = UserProfile.objects.get_or_create(user=obj)
+        if profile.cv:
+            return request.build_absolute_uri(profile.cv.url) if request else profile.cv.url
         return None
 
     def update(self, instance, validated_data):
         profile_data = validated_data.pop("profile", {})
+        profile, _ = UserProfile.objects.get_or_create(user=instance)
 
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         instance.save()
 
-        profile = instance.profile
         for attr, value in profile_data.items():
             setattr(profile, attr, value)
         profile.save()
@@ -98,10 +97,12 @@ class ProfileView(APIView):
     parser_classes = [parsers.MultiPartParser, parsers.FormParser, parsers.JSONParser]
 
     def get(self, request):
+        UserProfile.objects.get_or_create(user=request.user)
         serializer = ProfileSerializer(request.user, context={"request": request})
         return Response(serializer.data)
 
     def patch(self, request):
+        UserProfile.objects.get_or_create(user=request.user)
         serializer = ProfileSerializer(
             request.user,
             data=request.data,

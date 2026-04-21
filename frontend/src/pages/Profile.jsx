@@ -174,17 +174,28 @@ export default function Profile({ theme, setTheme }) {
             </div>
           </div>
 
-          {profile.cv_url && (
-            <a
-              href={profile.cv_url}
-              target="_blank"
-              rel="noreferrer"
-              className="hero-link-btn"
-              style={{ marginTop: "18px", width: "100%" }}
-            >
-              View CV
-            </a>
-          )}
+            {profile.cv_url && (
+            <div style={{ display: "grid", gap: "10px", marginTop: "18px" }}>
+                <a
+                href={profile.cv_url}
+                target="_blank"
+                rel="noreferrer"
+                className="hero-link-btn"
+                style={{ width: "100%" }}
+                >
+                View CV
+                </a>
+
+                <a
+                href={profile.cv_url}
+                download
+                className="hero-link-btn"
+                style={{ width: "100%" }}
+                >
+                Download CV
+                </a>
+            </div>
+            )}
         </div>
 
         <form className="card premium-form" onSubmit={handleSave}>
