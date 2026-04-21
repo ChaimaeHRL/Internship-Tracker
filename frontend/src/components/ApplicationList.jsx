@@ -1,16 +1,24 @@
 import api from "../api/axios";
 
-export default function ApplicationList({ applications, onRefresh }) {
+export default function ApplicationList({ applications, onRefresh, onEdit }) {
   const handleDelete = async (id) => {
-    await api.delete(`applications/${id}/`);
-    onRefresh();
+    try {
+      await api.delete(`applications/${id}/`);
+      onRefresh();
+    } catch (err) {
+      console.log("DELETE ERROR:", err.response?.data);
+    }
   };
 
   const handleStatusChange = async (app, newStatus) => {
-    await api.patch(`applications/${app.id}/`, {
-      status: newStatus,
-    });
-    onRefresh();
+    try {
+      await api.patch(`applications/${app.id}/`, {
+        status: newStatus,
+      });
+      onRefresh();
+    } catch (err) {
+      console.log("STATUS UPDATE ERROR:", err.response?.data);
+    }
   };
 
   return (
@@ -18,34 +26,58 @@ export default function ApplicationList({ applications, onRefresh }) {
       <h2>My Applications</h2>
 
       {applications.length === 0 ? (
-        <p>No applications yet.</p>
+        <p>No applications found.</p>
       ) : (
         <div className="application-list">
           {applications.map((app) => (
             <div key={app.id} className="application-item">
-              <div>
+              <div style={{ flex: 1 }}>
                 <h3>{app.company_name}</h3>
-                <p>{app.role}</p>
-                <p>Applied on: {app.application_date}</p>
-                <p>Source: {app.source}</p>
-                <p>Status: {app.status}</p>
-                <p>Deadline: {app.deadline || "—"}</p>
-                <p>Follow-up: {app.follow_up_date || "—"}</p>
-                <p>Notes: {app.notes || "—"}</p>
+
+                <p><strong>Role:</strong> {app.role}</p>
+                <p><strong>Applied on:</strong> {app.application_date}</p>
+                <p><strong>Source:</strong> {app.source}</p>
+                <p><strong>Deadline:</strong> {app.deadline || "—"}</p>
+                <p><strong>Follow-up:</strong> {app.follow_up_date || "—"}</p>
+                <p><strong>Notes:</strong> {app.notes || "—"}</p>
+
+                <p>
+                  <span className={`badge badge-${app.status.toLowerCase()}`}>
+                    {app.status}
+                  </span>
+                </p>
               </div>
 
               <div className="application-actions">
+                <label style={{ color: "var(--text-soft)", fontWeight: 600 }}>
+                  Update status
+                </label>
+
                 <select
                   value={app.status}
                   onChange={(e) => handleStatusChange(app, e.target.value)}
                 >
-                  <option>Applied</option>
-                  <option>Interview</option>
-                  <option>Rejected</option>
-                  <option>Offer</option>
+                  <option value="Applied">Applied</option>
+                  <option value="Interview">Interview</option>
+                  <option value="Rejected">Rejected</option>
+                  <option value="Offer">Offer</option>
                 </select>
 
-                <button onClick={() => handleDelete(app.id)}>Delete</button>
+                <button
+                  type="button"
+                  onClick={() => onEdit(app)}
+                  style={{ marginTop: "12px" }}
+                >
+                  Edit
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleDelete(app.id)}
+                  style={{ marginTop: "12px", background: "var(--danger)" }}
+                >
+                  Delete
+                </button>
               </div>
             </div>
           ))}

@@ -1,21 +1,28 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../api/axios";
 import ApplicationForm from "../components/ApplicationForm";
 import ApplicationList from "../components/ApplicationList";
 
-export default function Dashboard() {
+export default function Dashboard({ theme, setTheme }) {
   const [applications, setApplications] = useState([]);
-  const nav = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [statusFilter, setStatusFilter] = useState("All");
+  const [search, setSearch] = useState("");
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const navigate = useNavigate();
 
   const fetchApplications = async () => {
     try {
       const res = await api.get("applications/");
       setApplications(res.data);
     } catch (err) {
+      console.log("APPLICATIONS ERROR:", err.response?.status, err.response?.data);
       localStorage.removeItem("token");
       localStorage.removeItem("refresh");
-      nav("/");
+      navigate("/");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -36,17 +43,73 @@ export default function Dashboard() {
     return { total, interviews, offers, rejected, active, interviewRate };
   }, [applications]);
 
+  const filteredApplications = useMemo(() => {
+    return applications.filter((app) => {
+      const matchesStatus =
+        statusFilter === "All" ? true : app.status === statusFilter;
+
+      const query = search.toLowerCase();
+
+      const matchesSearch =
+        app.company_name.toLowerCase().includes(query) ||
+        app.role.toLowerCase().includes(query) ||
+        app.source.toLowerCase().includes(query);
+
+      return matchesStatus && matchesSearch;
+    });
+  }, [applications, statusFilter, search]);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("refresh");
-    nav("/");
+    navigate("/");
   };
 
+  const handleEditApplication = (app) => {
+    setSelectedApplication(app);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleCancelEdit = () => {
+    setSelectedApplication(null);
+  };
+
+  if (loading) {
+    return (
+      <div className="dashboard">
+        <div className="card">Loading dashboard...</div>
+      </div>
+    );
+  }
+
   return (
-    <div className="dashboard">
-      <div className="topbar">
-        <h1>Internship Tracker</h1>
-        <button onClick={handleLogout}>Logout</button>
+    <div className="dashboard premium-dashboard">
+      <div className="hero-card">
+        <div className="hero-left">
+          <h1>Internship Tracker</h1>
+          <p>
+            Track applications, interviews, offers, deadlines, and follow-ups
+            in one clean workspace.
+          </p>
+        </div>
+
+        <div className="hero-actions">
+          <Link to="/profile" className="hero-link-btn">
+            Profile
+          </Link>
+
+          <button
+            type="button"
+            className="theme-btn"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
+
+          <button className="logout-btn" onClick={handleLogout}>
+            Logout
+          </button>
+        </div>
       </div>
 
       <div className="stats-grid">
@@ -76,19 +139,48 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <ApplicationForm onCreated={fetchApplications} />
-      <ApplicationList applications={applications} onRefresh={fetchApplications} />
+      <div className="card filter-card">
+        <div className="section-header">
+          <div>
+            <h2>Filter Applications</h2>
+            <p className="section-subtitle">
+              Quickly find opportunities by company, role, source, or status.
+            </p>
+          </div>
+        </div>
+
+        <div className="filter-grid">
+          <input
+            type="text"
+            placeholder="Search by company, role, or source..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+          >
+            <option value="All">All statuses</option>
+            <option value="Applied">Applied</option>
+            <option value="Interview">Interview</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Offer">Offer</option>
+          </select>
+        </div>
+      </div>
+
+      <ApplicationForm
+        onCreated={fetchApplications}
+        selectedApplication={selectedApplication}
+        onCancelEdit={handleCancelEdit}
+      />
+
+      <ApplicationList
+        applications={filteredApplications}
+        onRefresh={fetchApplications}
+        onEdit={handleEditApplication}
+      />
     </div>
   );
 }
-const fetchApplications = async () => {
-  try {
-    const res = await api.get("applications/");
-    setApplications(res.data);
-  } catch (err) {
-    console.log("APPLICATIONS ERROR:", err.response?.status, err.response?.data);
-    localStorage.removeItem("token");
-    localStorage.removeItem("refresh");
-    nav("/");
-  }
-};

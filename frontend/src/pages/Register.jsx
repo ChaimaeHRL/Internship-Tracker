@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
-export default function Register() {
+export default function Register({ theme, setTheme }) {
   const navigate = useNavigate();
 
   const [form, setForm] = useState({
@@ -28,11 +28,8 @@ export default function Register() {
 
     try {
       await api.post("users/register/", form);
-
       navigate("/");
     } catch (err) {
-      console.log("REGISTER ERROR:", err.response?.data);
-
       if (err.response?.data) {
         setError(JSON.stringify(err.response.data));
       } else {
@@ -46,7 +43,16 @@ export default function Register() {
   return (
     <div className="page-center">
       <form className="card auth-card" onSubmit={handleRegister}>
-        <h1>Register</h1>
+        <div className="topbar">
+          <h1>Register</h1>
+          <button
+            type="button"
+            className="theme-btn"
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+          >
+            {theme === "dark" ? "Light mode" : "Dark mode"}
+          </button>
+        </div>
 
         <input
           type="text"

@@ -18,7 +18,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
 
-    'users',
+    'users.apps.UsersConfig',
     'applications',
 ]
 
@@ -81,3 +81,5 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.IsAuthenticated',
     ),
 }
+MEDIA_URL = "/media/"
+MEDIA_ROOT = BASE_DIR / "media"

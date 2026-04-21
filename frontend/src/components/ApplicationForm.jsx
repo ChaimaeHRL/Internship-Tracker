@@ -1,113 +1,196 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import api from "../api/axios";
 
-export default function ApplicationForm({ onCreated }) {
-  const [form, setForm] = useState({
-    company_name: "",
-    role: "",
-    application_date: "",
-    source: "LinkedIn",
-    status: "Applied",
-    notes: "",
-    follow_up_date: "",
-    deadline: "",
-  });
+const emptyForm = {
+  company_name: "",
+  role: "",
+  application_date: "",
+  source: "LinkedIn",
+  status: "Applied",
+  follow_up_date: "",
+  deadline: "",
+  notes: "",
+};
+
+export default function ApplicationForm({ onCreated, selectedApplication, onCancelEdit }) {
+  const [form, setForm] = useState(emptyForm);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (selectedApplication) {
+      setForm({
+        company_name: selectedApplication.company_name || "",
+        role: selectedApplication.role || "",
+        application_date: selectedApplication.application_date || "",
+        source: selectedApplication.source || "LinkedIn",
+        status: selectedApplication.status || "Applied",
+        follow_up_date: selectedApplication.follow_up_date || "",
+        deadline: selectedApplication.deadline || "",
+        notes: selectedApplication.notes || "",
+      });
+    } else {
+      setForm(emptyForm);
+    }
+  }, [selectedApplication]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const payload = {
-      ...form,
-      follow_up_date: form.follow_up_date || null,
-      deadline: form.deadline || null,
-    };
+    try {
+      const payload = {
+        ...form,
+        follow_up_date: form.follow_up_date || null,
+        deadline: form.deadline || null,
+      };
 
-    await api.post("applications/", payload);
+      if (selectedApplication) {
+        await api.put(`applications/${selectedApplication.id}/`, payload);
+      } else {
+        await api.post("applications/", payload);
+      }
 
-    setForm({
-      company_name: "",
-      role: "",
-      application_date: "",
-      source: "LinkedIn",
-      status: "Applied",
-      notes: "",
-      follow_up_date: "",
-      deadline: "",
-    });
+      setForm(emptyForm);
+      onCreated();
 
-    onCreated();
+      if (onCancelEdit) {
+        onCancelEdit();
+      }
+    } catch (err) {
+      console.log("SAVE APPLICATION ERROR:", err.response?.data);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <form className="card form-grid" onSubmit={handleSubmit}>
-      <h2>Add Application</h2>
+    <form className="card premium-form" onSubmit={handleSubmit}>
+      <div className="section-header">
+        <div>
+          <h2>{selectedApplication ? "Edit Application" : "Add Application"}</h2>
+          <p className="section-subtitle">
+            {selectedApplication
+              ? "Update this application."
+              : "Save a new internship or job application."}
+          </p>
+        </div>
+      </div>
 
-      <input
-        name="company_name"
-        placeholder="Company name"
-        value={form.company_name}
-        onChange={handleChange}
-        required
-      />
+      <div className="form-two-cols">
+        <div className="field-group">
+          <label>Company name</label>
+          <input
+            type="text"
+            name="company_name"
+            placeholder="Google, Meta, Amazon..."
+            value={form.company_name}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-      <input
-        name="role"
-        placeholder="Role"
-        value={form.role}
-        onChange={handleChange}
-        required
-      />
+        <div className="field-group">
+          <label>Role</label>
+          <input
+            type="text"
+            name="role"
+            placeholder="Software Engineering Intern"
+            value={form.role}
+            onChange={handleChange}
+            required
+          />
+        </div>
+      </div>
 
-      <input
-        name="application_date"
-        type="date"
-        value={form.application_date}
-        onChange={handleChange}
-        required
-      />
+      <div className="form-three-cols">
+        <div className="field-group">
+          <label>Application date</label>
+          <input
+            type="date"
+            name="application_date"
+            value={form.application_date}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-      <select name="source" value={form.source} onChange={handleChange}>
-        <option>LinkedIn</option>
-        <option>Indeed</option>
-        <option>Company Website</option>
-        <option>Referral</option>
-        <option>Other</option>
-      </select>
+        <div className="field-group">
+          <label>Follow-up date</label>
+          <input
+            type="date"
+            name="follow_up_date"
+            value={form.follow_up_date}
+            onChange={handleChange}
+          />
+        </div>
 
-      <select name="status" value={form.status} onChange={handleChange}>
-        <option>Applied</option>
-        <option>Interview</option>
-        <option>Rejected</option>
-        <option>Offer</option>
-      </select>
+        <div className="field-group">
+          <label>Deadline</label>
+          <input
+            type="date"
+            name="deadline"
+            value={form.deadline}
+            onChange={handleChange}
+          />
+        </div>
+      </div>
 
-      <input
-        name="follow_up_date"
-        type="date"
-        value={form.follow_up_date}
-        onChange={handleChange}
-      />
+      <div className="form-two-cols">
+        <div className="field-group">
+          <label>Source</label>
+          <select name="source" value={form.source} onChange={handleChange}>
+            <option value="LinkedIn">LinkedIn</option>
+            <option value="Indeed">Indeed</option>
+            <option value="Company Website">Company Website</option>
+            <option value="Referral">Referral</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
 
-      <input
-        name="deadline"
-        type="date"
-        value={form.deadline}
-        onChange={handleChange}
-      />
+        <div className="field-group">
+          <label>Status</label>
+          <select name="status" value={form.status} onChange={handleChange}>
+            <option value="Applied">Applied</option>
+            <option value="Interview">Interview</option>
+            <option value="Rejected">Rejected</option>
+            <option value="Offer">Offer</option>
+          </select>
+        </div>
+      </div>
 
-      <textarea
-        name="notes"
-        placeholder="Notes"
-        value={form.notes}
-        onChange={handleChange}
-        rows="4"
-      />
+      <div className="field-group">
+        <label>Notes</label>
+        <textarea
+          name="notes"
+          placeholder="Add notes about this application..."
+          value={form.notes}
+          onChange={handleChange}
+          rows="5"
+        />
+      </div>
 
-      <button type="submit">Save application</button>
+      <div className="form-actions form-actions-row">
+        <button type="submit" disabled={loading}>
+          {loading ? "Saving..." : selectedApplication ? "Update application" : "Save application"}
+        </button>
+
+        {selectedApplication && (
+          <button
+            type="button"
+            className="secondary-btn"
+            onClick={onCancelEdit}
+          >
+            Cancel edit
+          </button>
+        )}
+      </div>
     </form>
   );
 }
