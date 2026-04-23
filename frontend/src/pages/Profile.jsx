@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
@@ -21,15 +21,41 @@ export default function Profile({ theme, setTheme }) {
 
   const [profileImage, setProfileImage] = useState(null);
   const [cvFile, setCvFile] = useState(null);
+  const [previewImage, setPreviewImage] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
 
+  const backendBaseUrl = useMemo(() => {
+    return api.defaults.baseURL.replace(/\/api\/?$/, "");
+  }, []);
+
+  const normalizeMediaUrl = (url) => {
+    if (!url) return "";
+
+    if (url.startsWith("http://localhost:8000") || url.startsWith("https://localhost:8000")) {
+      return url.replace(/^https?:\/\/localhost:8000/, backendBaseUrl);
+    }
+
+    if (url.startsWith("/media/")) {
+      return `${backendBaseUrl}${url}`;
+    }
+
+    return url;
+  };
+
   const fetchProfile = async () => {
     try {
       const res = await api.get("users/profile/");
-      setProfile(res.data);
+      const normalizedProfile = {
+        ...res.data,
+        profile_image_url: normalizeMediaUrl(res.data.profile_image_url),
+        cv_url: normalizeMediaUrl(res.data.cv_url),
+      };
+
+      setProfile(normalizedProfile);
+      setPreviewImage(normalizedProfile.profile_image_url || "");
     } catch (err) {
       console.log("PROFILE ERROR:", err.response?.data);
       localStorage.removeItem("token");
@@ -49,6 +75,38 @@ export default function Profile({ theme, setTheme }) {
       ...profile,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleProfileImageChange = (e) => {
+    const file = e.target.files[0];
+    setProfileImage(file);
+
+    if (file) {
+      const localPreview = URL.createObjectURL(file);
+      setPreviewImage(localPreview);
+    }
+  };
+
+  const handleCvChange = (e) => {
+    const file = e.target.files[0];
+
+    if (!file) {
+      setCvFile(null);
+      return;
+    }
+
+    const isPdf =
+      file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+
+    if (!isPdf) {
+      setMessage("CV must be a PDF file.");
+      e.target.value = "";
+      setCvFile(null);
+      return;
+    }
+
+    setMessage("");
+    setCvFile(file);
   };
 
   const handleSave = async (e) => {
@@ -82,7 +140,14 @@ export default function Profile({ theme, setTheme }) {
         },
       });
 
-      setProfile(res.data);
+      const normalizedProfile = {
+        ...res.data,
+        profile_image_url: normalizeMediaUrl(res.data.profile_image_url),
+        cv_url: normalizeMediaUrl(res.data.cv_url),
+      };
+
+      setProfile(normalizedProfile);
+      setPreviewImage(normalizedProfile.profile_image_url || previewImage);
       setMessage("Profile updated successfully.");
       setProfileImage(null);
       setCvFile(null);
@@ -114,7 +179,8 @@ export default function Profile({ theme, setTheme }) {
         <div className="hero-left">
           <h1>My Profile</h1>
           <p>
-            Manage your professional identity, contact details, CV, and personal links.
+            Manage your personal information, professional links, profile photo,
+            and resume.
           </p>
         </div>
 
@@ -139,9 +205,9 @@ export default function Profile({ theme, setTheme }) {
 
       <div className="profile-grid">
         <div className="card profile-summary-card">
-          {profile.profile_image_url ? (
+          {previewImage ? (
             <img
-              src={profile.profile_image_url}
+              src={previewImage}
               alt="Profile"
               className="profile-photo"
             />
@@ -151,9 +217,10 @@ export default function Profile({ theme, setTheme }) {
             </div>
           )}
 
-          <h2>{profile.first_name || profile.last_name
-            ? `${profile.first_name} ${profile.last_name}`.trim()
-            : profile.username}
+          <h2>
+            {profile.first_name || profile.last_name
+              ? `${profile.first_name} ${profile.last_name}`.trim()
+              : profile.username}
           </h2>
 
           <p className="profile-muted">@{profile.username}</p>
@@ -174,28 +241,18 @@ export default function Profile({ theme, setTheme }) {
             </div>
           </div>
 
-            {profile.cv_url && (
-            <div style={{ display: "grid", gap: "10px", marginTop: "18px" }}>
-                <a
-                href={profile.cv_url}
-                target="_blank"
-                rel="noreferrer"
-                className="hero-link-btn"
-                style={{ width: "100%" }}
-                >
-                View CV
-                </a>
-
-                <a
-                href={profile.cv_url}
-                download
-                className="hero-link-btn"
-                style={{ width: "100%" }}
-                >
-                Download CV
-                </a>
-            </div>
-            )}
+          {profile.cv_url && (
+            <a
+              href={profile.cv_url}
+              target="_blank"
+              rel="noreferrer"
+              download
+              className="hero-link-btn"
+              style={{ marginTop: "18px", width: "100%" }}
+            >
+              Download CV
+            </a>
+          )}
         </div>
 
         <form className="card premium-form" onSubmit={handleSave}>
@@ -326,16 +383,16 @@ export default function Profile({ theme, setTheme }) {
               <input
                 type="file"
                 accept="image/*"
-                onChange={(e) => setProfileImage(e.target.files[0])}
+                onChange={handleProfileImageChange}
               />
             </div>
 
             <div className="field-group">
-              <label>CV / Resume</label>
+              <label>CV / Resume (PDF only)</label>
               <input
                 type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={(e) => setCvFile(e.target.files[0])}
+                accept=".pdf,application/pdf"
+                onChange={handleCvChange}
               />
             </div>
           </div>

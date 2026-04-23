@@ -12,9 +12,14 @@ const emptyForm = {
   notes: "",
 };
 
-export default function ApplicationForm({ onCreated, selectedApplication, onCancelEdit }) {
+export default function ApplicationForm({
+  onCreated,
+  selectedApplication,
+  onCancelEdit,
+}) {
   const [form, setForm] = useState(emptyForm);
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     if (selectedApplication) {
@@ -43,6 +48,19 @@ export default function ApplicationForm({ onCreated, selectedApplication, onCanc
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setMessage("");
+
+    if (form.follow_up_date && form.application_date > form.follow_up_date) {
+      setMessage("Follow-up date must be after or equal to application date.");
+      setLoading(false);
+      return;
+    }
+
+    if (form.deadline && form.application_date > form.deadline) {
+      setMessage("Deadline must be after or equal to application date.");
+      setLoading(false);
+      return;
+    }
 
     try {
       const payload = {
@@ -53,18 +71,31 @@ export default function ApplicationForm({ onCreated, selectedApplication, onCanc
 
       if (selectedApplication) {
         await api.put(`applications/${selectedApplication.id}/`, payload);
+        setMessage("Application updated successfully.");
       } else {
         await api.post("applications/", payload);
+        setMessage("Application saved successfully.");
       }
 
       setForm(emptyForm);
-      onCreated();
+
+      if (onCreated) {
+        await onCreated();
+      }
 
       if (onCancelEdit) {
         onCancelEdit();
       }
     } catch (err) {
-      console.log("SAVE APPLICATION ERROR:", err.response?.data);
+      console.log("SAVE APPLICATION ERROR:", err.response?.status, err.response?.data);
+
+      if (err.response?.status === 401) {
+        setMessage("Session expired. Please login again.");
+      } else if (err.response?.data) {
+        setMessage(JSON.stringify(err.response.data));
+      } else {
+        setMessage("Failed to save application.");
+      }
     } finally {
       setLoading(false);
     }
@@ -176,9 +207,19 @@ export default function ApplicationForm({ onCreated, selectedApplication, onCanc
         />
       </div>
 
+      {message && (
+        <p className={message.includes("successfully") ? "success-text" : "error"}>
+          {message}
+        </p>
+      )}
+
       <div className="form-actions form-actions-row">
         <button type="submit" disabled={loading}>
-          {loading ? "Saving..." : selectedApplication ? "Update application" : "Save application"}
+          {loading
+            ? "Saving..."
+            : selectedApplication
+            ? "Update application"
+            : "Save application"}
         </button>
 
         {selectedApplication && (
