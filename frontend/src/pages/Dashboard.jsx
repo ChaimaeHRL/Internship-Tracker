@@ -97,7 +97,9 @@ export default function Dashboard({ theme, setTheme }) {
           <Link to="/profile" className="hero-link-btn">
             Profile
           </Link>
-
+          <Link to="/interview" className="hero-link-btn">
+            Interview AI
+          </Link>
           <button
             type="button"
             className="theme-btn"
@@ -109,6 +111,7 @@ export default function Dashboard({ theme, setTheme }) {
           <button className="logout-btn" onClick={handleLogout}>
             Logout
           </button>
+        
         </div>
       </div>
 

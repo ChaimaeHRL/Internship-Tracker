@@ -584,3 +584,30 @@ strong {
     grid-template-columns: 1fr;
   }
 }
+.chat-list {
+  display: grid;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.chat-bubble {
+  padding: 16px;
+  border-radius: 18px;
+  border: 1px solid var(--card-border);
+}
+
+.chat-ai {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.chat-user {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.feedback-box {
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+}

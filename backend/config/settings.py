@@ -1,5 +1,8 @@
 from pathlib import Path
+import os
 
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+INTERVIEWS_USE_FAKE_AI = os.getenv("INTERVIEWS_USE_FAKE_AI", "true").lower() == "true"
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-change-this-later'
@@ -20,6 +23,7 @@ INSTALLED_APPS = [
 
     'users.apps.UsersConfig',
     'applications',
+    'interviews',
 ]
 
 MIDDLEWARE = [
