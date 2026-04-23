@@ -1,138 +1,72 @@
-#  Internship Tracker
+````md
+# Internship Tracker
 
-Internship Tracker is a full-stack web application built to help students and young professionals manage their internship and job applications in an organized and efficient way.
+A modern full-stack web application designed to help students and young professionals manage internship applications, track opportunities, organize follow-ups, and prepare for interviews with an integrated AI simulator.
 
-Instead of tracking applications manually in spreadsheets or notes, users can centralize everything in one modern dashboard: applications, statuses, deadlines, follow-ups, profile information, and documents.
+Built with **React + Vite** for the frontend and **Django REST Framework** for the backend.
 
-This project demonstrates practical skills in **full-stack development, REST API design, authentication, database management, frontend integration, and user experience design**.
 
----
+# Live Features
 
-##  Features
-
-###  Authentication
-
-- User registration
-- Secure login with JWT authentication
-- Persistent sessions
-- Logout functionality
-
-###  Dashboard
-
-Track recruitment progress with live statistics:
-
-- Total applications
-- Active applications
-- Interviews
-- Offers
-- Rejections
-- Interview success rate
-
-###  Application Management
-
-Users can create, update, and delete applications with:
-
-- Company name
-- Role / Position
-- Application date
-- Follow-up date
-- Deadline
-- Source platform
-- Current status
-- Personal notes
-
-###  Smart Validation
-
-- Application date must be before follow-up date
-- Application date must be before deadline
-- Required fields validation
-- Authenticated access only
-
-###  Profile Management
-
-Each user has a professional profile page with:
-
-- Username
-- Email
-- First name / Last name
-- Phone number
-- Location
-- University
-- LinkedIn link
-- GitHub link
-- Short bio
+- Secure user authentication (JWT)
+- Internship application tracking
+- Status management (Applied / Interview / Accepted / Rejected)
+- Follow-up reminders
+- Professional dashboard with analytics
+- Dark mode UI
+- User profile management
 - Profile picture upload
 - CV upload / download
+- AI Interview Simulator
+- Responsive modern interface
 
-###  Modern UI
 
-- Responsive design
-- Dark mode
-- Professional layout
-- Clean user experience
-- Mobile friendly
+# Tech Stack
 
----
-
-##  Tech Stack
-
-### Frontend
-
+## Frontend
 - React.js
 - Vite
 - React Router DOM
 - Axios
 - CSS3
 
-### Backend
-
+## Backend
 - Django
 - Django REST Framework
-- JWT Authentication (SimpleJWT)
-- django-cors-headers
-
-### Database
-
+- SimpleJWT
 - SQLite (development)
+- Pillow (media uploads)
 
----
 
-##  Project Structure
+# Project Structure
 
 ```bash
 Internship-Tracker/
-│
-├── backend/
-│   ├── applications/
-│   ├── users/
-│   ├── config/
-│   ├── media/
-│   └── manage.py
-│
-├── frontend/
+│── frontend/
 │   ├── src/
-│   │   ├── api/
-│   │   ├── components/
 │   │   ├── pages/
-│   │   └── App.jsx
+│   │   ├── components/
+│   │   ├── api/
+│   │   └── main.jsx
 │
-└── README.md
+│── backend/
+│   ├── users/
+│   ├── applications/
+│   ├── interviews/
+│   ├── config/
+│   └── manage.py
 ````
 
----
+# Installation
 
-##  Installation
-
-### 1. Clone the repository
+## 1. Clone repository
 
 ```bash
 git clone https://github.com/your-username/internship-tracker.git
 cd internship-tracker
 ```
 
----
-
-##  Backend Setup
+# Backend Setup
 
 ```bash
 cd backend
@@ -141,112 +75,268 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Run migrations
+## Run migrations
 
 ```bash
 python manage.py makemigrations
 python manage.py migrate
 ```
 
-### Start backend server
+## Start backend server
 
 ```bash
-python manage.py runserver
+python manage.py runserver 0.0.0.0:8000
 ```
 
-Backend URL:
+Backend runs on:
 
 ```bash
-http://127.0.0.1:8000/
+http://localhost:8000
 ```
 
----
-
-##  Frontend Setup
-
-Open a second terminal:
+# Frontend Setup
 
 ```bash
 cd frontend
 npm install
-npm run dev
+npm run dev -- --host 0.0.0.0
 ```
 
-Frontend URL:
+Frontend runs on:
 
 ```bash
-http://localhost:5173/
+http://localhost:5173
+```
+
+# Environment Variables
+
+Create:
+
+```bash
+frontend/.env
+```
+
+Example:
+
+```env
+VITE_API_URL=http://localhost:8000/api
 ```
 
 ---
 
-##  API Endpoints
+# Main Modules
 
-### Authentication
+## Authentication
 
-```http
-POST /api/users/register/
+* Register
+* Login
+* JWT token auth
+* Protected routes
+
+## Dashboard
+
+* Total applications
+* Pending applications
+* Interviews
+* Accepted offers
+* Rejected offers
+
+## Applications Manager
+
+Users can:
+
+* Add new application
+* Edit application
+* Delete application
+* Set company
+* Role
+* Application date
+* Follow-up date
+* Status
+* Notes
+
+## Profile Page
+
+Users can update:
+
+* Full name
+* Email
+* University
+* Degree
+* Skills
+* Bio
+* LinkedIn
+* GitHub
+* CV upload
+* Profile picture
+
+## AI Interview Simulator
+
+Simulates interview sessions:
+
+* HR interview
+* Technical interview
+* Behavioral interview
+* English interview
+
+Includes:
+
+* Dynamic questions
+* Scoring
+* Feedback
+* Suggested improved answers
+
+
+# Screenshots
+
+## Dashboard
+
+![Dashboard](https://github.com/user-attachments/assets/a90403dd-4653-44fc-a80f-29d2c65896da)
+
+Modern analytics dashboard to monitor all internship applications, interviews, accepted offers, pending tasks, and progress metrics.
+
+---
+
+## Profile Page
+
+![Profile](https://github.com/user-attachments/assets/3827adeb-30e2-4108-9549-d3ae04902f71)
+
+Professional user profile with editable personal information, profile picture upload, CV management, academic background, skills, and links.
+
+---
+
+## AI Interview Simulator
+
+![Interview Simulator](https://github.com/user-attachments/assets/f595d976-2487-4c6a-a487-d01114549b57)
+
+Interactive AI-powered mock interview module with multiple interview types, dynamic questions, answer evaluation, scoring, and improvement suggestions.
+
+---
+
+## Interview History (Dark Mode)
+
+![Interview History](https://github.com/user-attachments/assets/67df3394-676a-44b5-ba72-03de18c74ffc)
+
+Clean dark-mode history page showing previous interview sessions, scores, summaries, and progress tracking over time.
+
+## Dashboard
+
+```md
+Add screenshot here:
+screenshots/dashboard.png
+```
+
+## Applications Page
+
+```md
+Add screenshot here:
+screenshots/applications.png
+```
+
+## Profile Page
+
+```md
+Add screenshot here:
+screenshots/profile.png
+```
+
+## AI Interview Simulator
+
+```md
+Add screenshot here:
+screenshots/interview.png
+```
+
+
+# Example Screenshots Section (GitHub Ready)
+
+```md
+## Dashboard
+
+![Dashboard](screenshots/dashboard.png)
+
+## Applications
+
+![Applications](screenshots/applications.png)
+
+## Profile
+
+![Profile](screenshots/profile.png)
+
+## AI Interview Simulator
+
+![Interview](screenshots/interview.png)
+```
+
+# API Endpoints
+
+## Auth
+
+```bash
 POST /api/token/
 POST /api/token/refresh/
+POST /api/users/register/
 ```
 
-### Applications
+## Applications
 
-```http
+```bash
 GET    /api/applications/
 POST   /api/applications/
-PUT    /api/applications/{id}/
-DELETE /api/applications/{id}/
+PUT    /api/applications/:id/
+DELETE /api/applications/:id/
 ```
 
-### Profile
+## Profile
 
-```http
+```bash
 GET   /api/users/profile/
 PATCH /api/users/profile/
 ```
 
----
+## Interviews
 
-##  Screenshots
+```bash
+POST /api/interviews/start/
+POST /api/interviews/answer/
+GET  /api/interviews/history/
+```
 
-You can add screenshots here after deployment:
 
-* Login page
-* Dashboard
-* Applications manager
-* Profile page
-* Dark mode UI
-
----
-
-##  Future Improvements
+# Future Improvements
 
 * Email reminders
-* Calendar integration
-* Advanced analytics charts
-* Kanban board for applications
-* Resume scoring AI
-* Notifications system
+* Google Calendar sync
+* AI CV Analyzer
+* AI Cover Letter Generator
+* Job scraping APIs
+* Recruiter portal
+* Team collaboration
+* Real-time notifications
+* Export reports PDF
 * Multi-language support
 
----
+# Deployment
 
-##  Author
+## Frontend
 
-**Chaimae EL HAROUAL**
+* Vercel
+* Netlify
 
-Computer Science Student passionate about software engineering, web development, and building practical digital solutions.
+## Backend
 
----
+* Railway
+* Render
+* DigitalOcean
+* AWS
 
-##  License
+# Author
 
-This project is open for educational and portfolio purposes.
+Developed by **Chaimae**
 
----
+# License
 
-##  Support
+MIT License
 
-If you like this project, feel free to star the repository and share feedback.
-
+```
+```
